@@ -1,45 +1,44 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"strconv"
-	"strings"
+    "fmt"
+    "os"
+    "strconv"
+    "strings"
 )
 
 func main() {
-	if len(os.Args) == 1 {
-		fmt.Fprintln(os.Stderr, "Error")
-		return
-	}
+    // If no arguments provided, just return
+    if len(os.Args) == 1 {
+        return
+    }
 
-	args := os.Args[1:]
+    // Split the input string into numbers
+    input := strings.Fields(os.Args[1])
+    
+    stackA := NewStack("a")
+    stackB := NewStack("b")
 
-	// validate and convert the arguments to integers
-	stackA := make([]int, 0, len(args))
-	seen := make(map[int]bool)
+    // Validate and convert arguments
+    seen := make(map[int]bool)
+    // Load numbers in reverse order
+    for i := len(input) - 1; i >= 0; i-- {
+        num, err := strconv.Atoi(input[i])
+        if err != nil {
+            fmt.Fprintln(os.Stderr, "Error")
+            return
+        }
+        if seen[num] {
+            fmt.Fprintln(os.Stderr, "Error")
+            return
+        }
+        seen[num] = true
+        stackA.Push(num)
+    }
 
-	for _, arg := range args {
-		arg = strings.TrimSpace(arg)
-
-		// Converting to integer
-		num, err := strconv.Atoi(arg)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error")
-			return
-		}
-
-		// Check for duplicates
-		if seen[num] {
-			fmt.Fprintln(os.Stderr, "Error")
-			return
-		}
-		seen[num] = true
-
-		// Add the number to the stack
-		stackA = append(stackA, num)
-	}
-	fmt.Println("Stack A:", stackA)
+    // Get and print operations
+    operations := Sort(stackA, stackB)
+    for _, op := range operations {
+        fmt.Println(op)
+    }
 }
-
-
