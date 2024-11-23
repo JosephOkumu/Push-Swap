@@ -1,32 +1,33 @@
 package lib
 
-
 import (
 	"fmt"
 	"math/rand"
 )
 
-func GenerateRandomInts() ([]int, error) {
-	fmt.Println("Numbers will be randomly generated in the range [min,max).\nEnter the minimum, maximum values and the length of numbers in order.\nmin max length")
-	input := InputInts()
-	if len(input) != 3 {
-		return nil, fmt.Errorf("please, check your input for correctness")
+// GenerateRandNums prompts the user for input and generates random unique integers.
+func GenerateRandNums() ([]int, error) {
+	fmt.Println("Please enter the minimum value, maximum value, and the quantity of random numbers.")
+	var min, max, count int
+	_, err := fmt.Scan(&min, &max, &count)
+	if err != nil {
+		return nil, fmt.Errorf("invalid input: %v", err)
 	}
-	return RandIntsUniq(input[0], input[1], input[2])
+	if min > max {
+		return nil, fmt.Errorf("the minimum value cannot be larger than the maximum value %v", max)
+	}
+	if max-min < count {
+		return nil, fmt.Errorf("the range is too small to generate the required amount of unique numbers")
+	}
+	return CreateUniqueNums(min, max, count)
 }
 
-//generates unique random integers
-func RandIntsUniq(min, max, length int) ([]int, error) {
-	if min > max {
-		return nil, fmt.Errorf("minimum number can't be larger than %v", max)
+// CreateUniqueNums generates a list of unique random numbers in a specified range.
+func CreateUniqueNums(min, max, count int) ([]int, error) {
+	randomNumbers := make([]int, count)
+	randomPermutation := rand.Perm(max - min + 1)
+	for i := 0; i < count; i++ {
+		randomNumbers[i] = randomPermutation[i] + min
 	}
-	if max-min < length {
-		return nil, fmt.Errorf("numbers can't be duplicated, try length >= max-min")
-	}
-	nums := make([]int, length)
-	randomList := rand.Perm(max - min + 1)
-	for i := 0; i < length; i++ {
-		nums[i] = randomList[i] + min
-	}
-	return nums, nil
+	return randomNumbers, nil
 }

@@ -14,7 +14,7 @@ func main() {
 		err  error
 	)
 	if lib.EnableRandFlag() {
-		nums, err = lib.GenerateRandomInts()
+		nums, err = lib.GenerateRandNums()
 		if err != nil {
 			fmt.Println("Error")
 			return
