@@ -2,97 +2,98 @@ package pushswap
 
 import (
 	"pushswap/lib"
-	"sort"
+	"slices"
 )
 
-func SmallSort(nums []int) string {
-	res := ""
-	stack := []*lib.Stack{lib.NewStack(nums), lib.NewStack(make([]int, 0, len(nums)))}
-	res = SmallInstructions(nums, stack)
-	return res
+func SortSmallNumbs(nums []int) string {
+	instructions := ""
+	stacks := []*lib.Stack{lib.NewStack(nums), lib.NewStack(make([]int, 0, len(nums)))}
+	instructions = SortInstructions(nums, stacks)
+	return instructions
 }
 
-func SmallInstructions(nums []int, s []*lib.Stack) string {
-	half := len(nums) / 2
-	res := ""
+func SortInstructions(nums []int, stacks []*lib.Stack) string {
+	halfSize := len(nums) / 2
+	instructions := ""
 	for {
-		a, b := s[0].Nums, s[1].Nums
-		if isASorted(a) {
+		stackA, stackB := stacks[0].Nums, stacks[1].Nums
+		if isASorted(stackA) {
 			break
 		}
-		op := match(aStack(a, half), a, b)
-		Action(s, op)
-		res += op + "\n"
+		op := Complete(OperationA(stackA, halfSize), stackA, stackB)
+		Action(stacks, op)
+		instructions += op + "\n"
 	}
 	for {
-		a, b := s[0].Nums, s[1].Nums
-		if len(a) == len(nums) && isASorted(a) {
+		stackA, stackB := stacks[0].Nums, stacks[1].Nums
+		if len(stackA) == len(nums) && isASorted(stackA) {
 			break
 		}
-		ins := bStack(b)
-		Action(s, ins)
-		res += ins + "\n"
+		ins := OperationB(stackB)
+		Action(stacks, ins)
+		instructions += ins + "\n"
 	}
-	return res
+	return instructions
 }
 
-// sa, ra, rra, pb
-func aStack(a []int, half int) string {
-	swap := saIdx(a)
-	mid, i := len(a)/2, len(a)-1
-	if a[i] < half {
+// OperationA generates operations for stack A (sa, ra, rra, pb).
+func OperationA(stackA []int, halfSize int) string {
+	swapIdx := ASwapIndex(stackA)
+	midPoint, lastIdx := len(stackA)/2, len(stackA)-1
+	if stackA[lastIdx] < halfSize {
 		return "pb"
 	}
-	if swap > 0 {
-		if inOrder(a[i-1], a[i]) {
+	if swapIdx > 0 {
+		if isOrdered(stackA[lastIdx-1], stackA[lastIdx]) {
 			return "sa"
-		} else if swap < mid {
+		} else if swapIdx < midPoint {
 			return "rra"
 		}
 	} else {
-		minNumIdx := smallest(a)
-		if minNumIdx == i {
+		minIdx := IndexOfSmall(stackA)
+		if minIdx == lastIdx {
 			return "pb"
-		} else if minNumIdx < mid || inOrder(a[i], a[0]) {
+		} else if minIdx < midPoint || isOrdered(stackA[lastIdx], stackA[0]) {
 			return "rra"
 		}
 	}
 	return "ra"
 }
 
-// sb, rb, rrb, pa
-func bStack(bstack []int) string {
-	b := make([]int, len(bstack))
-	copy(b, bstack)
-	lib.UInts(b)
-	swap := sbIdx(b)
-	mid, j := len(b)/2, len(b)-1
-	if swap > 0 {
-		if inOrder(b[j], b[j-1]) {
+// OperationB generates operations for stack B (sb, rb, rrb, pa).
+func OperationB(stackB []int) string {
+	stackBCopy := make([]int, len(stackB))
+	copy(stackBCopy, stackB)
+	lib.UInts(stackBCopy)
+	swapIdx := BSwapIndex(stackBCopy)
+	midPoint, lastIdx := len(stackBCopy)/2, len(stackBCopy)-1
+	if swapIdx > 0 {
+		if isOrdered(stackBCopy[lastIdx], stackBCopy[lastIdx-1]) {
 			return "sb"
-		} else if swap < mid {
+		} else if swapIdx < midPoint {
 			return "rrb"
 		}
 	} else {
-		maxNumIdx := biggest(b)
-		if maxNumIdx == j {
+		maxNumIdx := IndexOfBig(stackBCopy)
+		if maxNumIdx == lastIdx {
 			return "pa"
-		} else if maxNumIdx < mid || inOrder(b[0], b[j]) {
+		} else if maxNumIdx < midPoint || isOrdered(stackBCopy[0], stackBCopy[lastIdx]) {
 			return "rrb"
 		}
 	}
 	return "rb"
 }
 
-func match(ins string, a, b []int) string {
-	if len(b) < 2 || isBSorted(b) {
+// Complete adjusts operations to combine previous operations into a more efficient sequence.
+func Complete(ins string, stackA, stackB []int) string {
+	if len(stackB) < 2 || isBSorted(stackB) {
 		return ins
 	}
-	bins := bStack(b)
-	switch ins { //ins is an instruction from aStack(a)
+	bins := OperationB(stackB)
+	switch ins { // ins is an instruction from OperationA(stackA)
 	case "pb":
 		if bins == "sb" {
-			if t := len(a) - saIdx(a); t < 3 {
+			if t := len(stackA) - ASwapIndex(stackA); t < 3 {
 				if t == 1 {
 					return "ss"
 				}
@@ -102,47 +103,49 @@ func match(ins string, a, b []int) string {
 			}
 		}
 	case "sa":
-		if t := len(b) - sbIdx(b); t < 3 {
+		if t := len(stackB) - BSwapIndex(stackB); t < 3 {
 			if bins == "sb" {
 				return "ss"
 			}
 			return "rb"
 		}
 	case "ra":
-		if bins == "rb" || bins == "sb" && len(b) == 2 {
+		if bins == "rb" || bins == "sb" && len(stackB) == 2 {
 			return "rr"
 		}
 	case "rra":
-		if bins == "rrb" || bins == "sb" && len(b) == 2 {
+		if bins == "rrb" || bins == "sb" && len(stackB) == 2 {
 			return "rrr"
 		}
 	}
 	return ins
 }
 
-func smallest(nums []int) int {
-	min, idx := 0x3f3f3f3f, -1
+// IndexOfSmall finds the index of the indexOfSmall element in a slice.
+func IndexOfSmall(nums []int) int {
+	minVal, minIdx := 0x3f3f3f3f, -1
 	for i := 0; i < len(nums); i++ {
-		if min > nums[i] {
-			min = nums[i]
-			idx = i
+		if minVal > nums[i] {
+			minVal = nums[i]
+			minIdx = i
 		}
 	}
-	return idx
+	return minIdx
 }
 
-func biggest(nums []int) int {
-	max, idx := -1, -1
+// IndexOfBig finds the index of the largest element in a slice.
+func IndexOfBig(nums []int) int {
+	maxVal, maxIdx := -1, -1
 	for i := 0; i < len(nums); i++ {
-		if max < nums[i] {
-			max = nums[i]
-			idx = i
+		if maxVal < nums[i] {
+			maxVal = nums[i]
+			maxIdx = i
 		}
 	}
-	return idx
+	return maxIdx
 }
 
-func saIdx(nums []int) int {
+func ASwapIndex(nums []int) int {
 	for i := len(nums) - 1; i >= 1; i-- {
 		if nums[i]-nums[i-1] == 1 {
 			return i
@@ -151,7 +154,7 @@ func saIdx(nums []int) int {
 	return -1
 }
 
-func sbIdx(nums []int) int {
+func BSwapIndex(nums []int) int {
 	for i := len(nums) - 1; i >= 1; i-- {
 		if nums[i-1]-nums[i] == 1 {
 			return i
@@ -160,11 +163,12 @@ func sbIdx(nums []int) int {
 	return -1
 }
 
-// true if a+1 = b
-func inOrder(a, b int) bool {
+// isOrdered checks if b is exactly one more than a.
+func isOrdered(a, b int) bool {
 	return b-a == 1
 }
 
+// isASorted checks if stack A is sorted in ascending order.
 func isASorted(nums []int) bool {
 	for i := 0; i < len(nums)-1; i++ {
 		if nums[i]-nums[i+1] != 1 {
@@ -174,6 +178,7 @@ func isASorted(nums []int) bool {
 	return true
 }
 
+// isBSorted checks if stack B is sorted in ascending order
 func isBSorted(nums []int) bool {
-	return sort.IntsAreSorted(nums)
+	return slices.IsSorted(nums)
 }
