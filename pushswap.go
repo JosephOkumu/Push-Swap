@@ -24,7 +24,7 @@ func main() {
 		if len(args) < 1 {
 			return
 		}
-		nums, err = lib.UniqInts(args[0])
+		nums, err = lib.UniqueNums(args[0])
 		if err != nil {
 			fmt.Println("Error")
 			return
