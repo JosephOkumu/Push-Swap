@@ -40,7 +40,7 @@ func main() {
 	instructions := ""
 	lib.UInts(nums)
 	if len(nums) <= 100 {
-		instructions = pushswap.SmallSort(nums)
+		instructions = pushswap.SortSmallNumbs(nums)
 	} else {
 		instructions = pushswap.Sort(nums)
 	}
