@@ -69,6 +69,32 @@ func swap(stack Stack) Stack {
 }
 
 
+// rotate shifts all elements up by 1
+func rotate(stack Stack) Stack {
+	if len(stack) <= 1 {
+		return stack
+	}
+	return append(stack[1:], stack[0])
+}
+
+// reverseRotate shifts all elements down by 1
+func reverseRotate(stack Stack) Stack {
+	if len(stack) <= 1 {
+		return stack
+	}
+	last := stack[len(stack)-1]
+	return append([]int{last}, stack[:len(stack)-1]...)
+}
+
+// isSorted checks if stack is sorted in ascending order
+func isSorted(stack Stack) bool {
+	for i := 1; i < len(stack); i++ {
+		if stack[i] < stack[i-1] {
+			return false
+		}
+	}
+	return true
+}
 
 
 
