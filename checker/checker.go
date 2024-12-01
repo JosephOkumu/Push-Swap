@@ -31,6 +31,43 @@ func parseInput(args []string) (Stack, error) {
 	return stack, nil
 }
 
+// readInstructions reads instructions from standard input
+func readInstructions() ([]string, error) {
+	var instructions []string
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for scanner.Scan() {
+		inst := strings.TrimSpace(scanner.Text())
+		if inst == "" {
+			break
+		}
+		instructions = append(instructions, inst)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return instructions, nil
+}
+
+// push moves top element from source to destination stack
+func push(dest, src Stack) (Stack, Stack) {
+	if len(src) == 0 {
+		return dest, src
+	}
+	return append(dest, src[0]), src[1:]
+}
+
+// swap swaps first two elements of a stack
+func swap(stack Stack) Stack {
+	if len(stack) < 2 {
+		return stack
+	}
+	stack[0], stack[1] = stack[1], stack[0]
+	return stack
+}
+
 
 
 
