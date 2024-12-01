@@ -96,5 +96,69 @@ func isSorted(stack Stack) bool {
 	return true
 }
 
+func main() {
+	// Parse and validate input arguments
+	if len(os.Args) < 2 {
+		return
+	}
+
+	stackA, err := parseInput(os.Args[1:])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error")
+		os.Exit(1)
+	}
+
+	stackB := Stack{}
+
+	// Read and validate instructions
+	instructions, err := readInstructions()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error")
+		os.Exit(1)
+	}
+
+	// Execute instructions
+	for _, inst := range instructions {
+		switch inst {
+		case "pa":
+			stackA, stackB = push(stackA, stackB)
+		case "pb":
+			stackB, stackA = push(stackB, stackA)
+		case "sa":
+			stackA = swap(stackA)
+		case "sb":
+			stackB = swap(stackB)
+		case "ss":
+			stackA = swap(stackA)
+			stackB = swap(stackB)
+		case "ra":
+			stackA = rotate(stackA)
+		case "rb":
+			stackB = rotate(stackB)
+		case "rr":
+			stackA = rotate(stackA)
+			stackB = rotate(stackB)
+		case "rra":
+			stackA = reverseRotate(stackA)
+		case "rrb":
+			stackB = reverseRotate(stackB)
+		case "rrr":
+			stackA = reverseRotate(stackA)
+			stackB = reverseRotate(stackB)
+		default:
+			fmt.Fprintln(os.Stderr, "Error")
+			os.Exit(1)
+		}
+	}
+
+	// Check sorting condition
+	if isSorted(stackA) && len(stackB) == 0 {
+		fmt.Println("OK")
+	} else {
+		fmt.Println("KO")
+	}
+}
+
+
 
 
