@@ -1,26 +1,26 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 )
 
+// Stack type to represent the stack
 type Stack []int
 
-// parseInput converts command-line arguments to integers.
+// parseInput parses the stack from the command-line arguments
 func parseInput(args []string) (Stack, error) {
 	var stack Stack
 	seen := make(map[int]bool)
 
-	for _, arg := range strings.Fields(strings.Join(args, " ")) {
+	for _, arg := range args {
 		num, err := strconv.Atoi(arg)
 		if err != nil {
 			return nil, fmt.Errorf("invalid input")
 		}
 
+		// Check for duplicates
 		if seen[num] {
 			return nil, fmt.Errorf("duplicate number")
 		}
@@ -31,61 +31,82 @@ func parseInput(args []string) (Stack, error) {
 	return stack, nil
 }
 
-// readInstructions reads instructions from standard input.
-func readInstructions() ([]string, error) {
-	var instructions []string
-	scanner := bufio.NewScanner(os.Stdin)
-
-	for scanner.Scan() {
-		inst := strings.TrimSpace(scanner.Text())
-		if inst == "" {
-			break
+// executeInstruction executes the given instruction on the stacks
+func executeInstruction(inst string, stackA, stackB Stack) (Stack, Stack, error) {
+	switch inst {
+	case "pa":
+		// Push from B to A
+		if len(stackB) == 0 {
+			return stackA, stackB, fmt.Errorf("Error")
 		}
-		instructions = append(instructions, inst)
+		return append([]int{stackB[0]}, stackA...), stackB[1:], nil
+	case "pb":
+		// Push from A to B
+		if len(stackA) == 0 {
+			return stackA, stackB, fmt.Errorf("Error")
+		}
+		return stackA[1:], append([]int{stackA[0]}, stackB...), nil
+	case "sa":
+		// Swap the first two elements of A
+		if len(stackA) < 2 {
+			return stackA, stackB, nil
+		}
+		stackA[0], stackA[1] = stackA[1], stackA[0]
+		return stackA, stackB, nil
+	case "sb":
+		// Swap the first two elements of B
+		if len(stackB) < 2 {
+			return stackA, stackB, nil
+		}
+		stackB[0], stackB[1] = stackB[1], stackB[0]
+		return stackA, stackB, nil
+	case "ss":
+		// Swap both A and B
+		stackA, stackB, _ = executeInstruction("sa", stackA, stackB)
+		stackA, stackB, _ = executeInstruction("sb", stackA, stackB)
+		return stackA, stackB, nil
+	case "ra":
+		// Rotate A
+		if len(stackA) <= 1 {
+			return stackA, stackB, nil
+		}
+		return append(stackA[1:], stackA[0]), stackB, nil
+	case "rb":
+		// Rotate B
+		if len(stackB) <= 1 {
+			return stackA, stackB, nil
+		}
+		return stackA, append(stackB[1:], stackB[0]), nil
+	case "rr":
+		// Rotate both A and B
+		stackA, stackB, _ = executeInstruction("ra", stackA, stackB)
+		stackA, stackB, _ = executeInstruction("rb", stackA, stackB)
+		return stackA, stackB, nil
+	case "rra":
+		// Reverse rotate A
+		if len(stackA) <= 1 {
+			return stackA, stackB, nil
+		}
+		last := stackA[len(stackA)-1]
+		return append([]int{last}, stackA[:len(stackA)-1]...), stackB, nil
+	case "rrb":
+		// Reverse rotate B
+		if len(stackB) <= 1 {
+			return stackA, stackB, nil
+		}
+		last := stackB[len(stackB)-1]
+		return stackA, append([]int{last}, stackB[:len(stackB)-1]...), nil
+	case "rrr":
+		// Reverse rotate both A and B
+		stackA, stackB, _ = executeInstruction("rra", stackA, stackB)
+		stackA, stackB, _ = executeInstruction("rrb", stackA, stackB)
+		return stackA, stackB, nil
+	default:
+		return stackA, stackB, fmt.Errorf("invalid instruction")
 	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return instructions, nil
 }
 
-// push moves the top element from source to destination stack.
-func push(dest, src Stack) (Stack, Stack) {
-	if len(src) == 0 {
-		return dest, src
-	}
-	return append(dest, src[0]), src[1:]
-}
-
-// swap swaps the first two elements of a stack.
-func swap(stack Stack) Stack {
-	if len(stack) < 2 {
-		return stack
-	}
-	stack[0], stack[1] = stack[1], stack[0]
-	return stack
-}
-
-// rotate shifts all elements up by 1.
-func rotate(stack Stack) Stack {
-	if len(stack) <= 1 {
-		return stack
-	}
-	return append(stack[1:], stack[0])
-}
-
-// reverseRotate shifts all elements down by 1.
-func reverseRotate(stack Stack) Stack {
-	if len(stack) <= 1 {
-		return stack
-	}
-	last := stack[len(stack)-1]
-	return append([]int{last}, stack[:len(stack)-1]...)
-}
-
-// isSorted checks if the stack is sorted in ascending order.
+// isSorted checks if stack A is sorted in ascending order
 func isSorted(stack Stack) bool {
 	for i := 1; i < len(stack); i++ {
 		if stack[i] < stack[i-1] {
@@ -96,62 +117,38 @@ func isSorted(stack Stack) bool {
 }
 
 func main() {
-	// Handle no arguments case.
 	if len(os.Args) < 2 {
+		// No arguments, nothing to do
 		return
 	}
 
-	// Parse and validate input arguments.
-	stackA, err := parseInput(os.Args[1:])
+	// Parse stack from the command-line arguments
+	stackArgs := os.Args[1:]
+	stackA, err := parseInput(stackArgs)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error")
 		os.Exit(1)
 	}
 
+	// Initialize stackB (empty)
 	stackB := Stack{}
 
-	// Read and validate instructions.
-	instructions, err := readInstructions()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error")
-		os.Exit(1)
-	}
+	// Process instructions from the command-line arguments
+	for _, inst := range os.Args[1:] {
+		// Stop processing when we reach the end of the instructions
+		if inst == stackArgs[0] {
+			break
+		}
 
-	// Execute instructions.
-	for _, inst := range instructions {
-		switch inst {
-		case "pa":
-			stackA, stackB = push(stackA, stackB)
-		case "pb":
-			stackB, stackA = push(stackB, stackA)
-		case "sa":
-			stackA = swap(stackA)
-		case "sb":
-			stackB = swap(stackB)
-		case "ss":
-			stackA = swap(stackA)
-			stackB = swap(stackB)
-		case "ra":
-			stackA = rotate(stackA)
-		case "rb":
-			stackB = rotate(stackB)
-		case "rr":
-			stackA = rotate(stackA)
-			stackB = rotate(stackB)
-		case "rra":
-			stackA = reverseRotate(stackA)
-		case "rrb":
-			stackB = reverseRotate(stackB)
-		case "rrr":
-			stackA = reverseRotate(stackA)
-			stackB = reverseRotate(stackB)
-		default:
+		// Execute the instruction on the stacks
+		stackA, stackB, err = executeInstruction(inst, stackA, stackB)
+		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error")
 			os.Exit(1)
 		}
 	}
 
-	// Check sorting condition.
+	// Check if the stack is sorted and B is empty
 	if isSorted(stackA) && len(stackB) == 0 {
 		fmt.Println("OK")
 	} else {
