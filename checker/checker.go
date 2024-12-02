@@ -10,7 +10,7 @@ import (
 
 type Stack []int
 
-// parseInput converts command-line arguments to integers
+// parseInput converts command-line arguments to integers.
 func parseInput(args []string) (Stack, error) {
 	var stack Stack
 	seen := make(map[int]bool)
@@ -31,7 +31,7 @@ func parseInput(args []string) (Stack, error) {
 	return stack, nil
 }
 
-// readInstructions reads instructions from standard input
+// readInstructions reads instructions from standard input.
 func readInstructions() ([]string, error) {
 	var instructions []string
 	scanner := bufio.NewScanner(os.Stdin)
@@ -51,7 +51,7 @@ func readInstructions() ([]string, error) {
 	return instructions, nil
 }
 
-// push moves top element from source to destination stack
+// push moves the top element from source to destination stack.
 func push(dest, src Stack) (Stack, Stack) {
 	if len(src) == 0 {
 		return dest, src
@@ -59,7 +59,7 @@ func push(dest, src Stack) (Stack, Stack) {
 	return append(dest, src[0]), src[1:]
 }
 
-// swap swaps first two elements of a stack
+// swap swaps the first two elements of a stack.
 func swap(stack Stack) Stack {
 	if len(stack) < 2 {
 		return stack
@@ -68,8 +68,7 @@ func swap(stack Stack) Stack {
 	return stack
 }
 
-
-// rotate shifts all elements up by 1
+// rotate shifts all elements up by 1.
 func rotate(stack Stack) Stack {
 	if len(stack) <= 1 {
 		return stack
@@ -77,7 +76,7 @@ func rotate(stack Stack) Stack {
 	return append(stack[1:], stack[0])
 }
 
-// reverseRotate shifts all elements down by 1
+// reverseRotate shifts all elements down by 1.
 func reverseRotate(stack Stack) Stack {
 	if len(stack) <= 1 {
 		return stack
@@ -86,7 +85,7 @@ func reverseRotate(stack Stack) Stack {
 	return append([]int{last}, stack[:len(stack)-1]...)
 }
 
-// isSorted checks if stack is sorted in ascending order
+// isSorted checks if the stack is sorted in ascending order.
 func isSorted(stack Stack) bool {
 	for i := 1; i < len(stack); i++ {
 		if stack[i] < stack[i-1] {
@@ -97,11 +96,12 @@ func isSorted(stack Stack) bool {
 }
 
 func main() {
-	// Parse and validate input arguments
+	// Handle no arguments case.
 	if len(os.Args) < 2 {
 		return
 	}
 
+	// Parse and validate input arguments.
 	stackA, err := parseInput(os.Args[1:])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error")
@@ -110,14 +110,14 @@ func main() {
 
 	stackB := Stack{}
 
-	// Read and validate instructions
+	// Read and validate instructions.
 	instructions, err := readInstructions()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error")
 		os.Exit(1)
 	}
 
-	// Execute instructions
+	// Execute instructions.
 	for _, inst := range instructions {
 		switch inst {
 		case "pa":
@@ -151,14 +151,10 @@ func main() {
 		}
 	}
 
-	// Check sorting condition
+	// Check sorting condition.
 	if isSorted(stackA) && len(stackB) == 0 {
 		fmt.Println("OK")
 	} else {
 		fmt.Println("KO")
 	}
 }
-
-
-
-
