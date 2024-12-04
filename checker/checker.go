@@ -119,4 +119,22 @@ func AppendNumbers(userInput []string, aStack *[]int) bool {
 	return false
 }
 
+// Pushes the top first element of one stack to another (pa, pb)
+func PushTop(exStack *[]int, impStack *[]int) {
+	if len(*exStack) == 0 {
+		// fmt.Println("Not enought elements")
+		return
+	}
+	tempVar := (*exStack)[0]
+	*exStack = append((*exStack)[:0], (*exStack)[0+1:]...)
+
+	if len(*impStack) == 0 {
+		*impStack = append(*impStack, tempVar)
+		return
+	}
+
+	*impStack = append((*impStack)[:0+1], (*impStack)[0:]...)
+	(*impStack)[0] = tempVar
+}
+
 
