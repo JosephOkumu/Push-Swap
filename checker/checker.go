@@ -95,4 +95,28 @@ func GetInstructions(allInstructions []string, instructionsToUse *[]string) bool
 	return false
 }
 
+// Append all number to A stack
+func AppendNumbers(userInput []string, aStack *[]int) bool {
+	for i := 0; i < len(userInput); i++ {
+		numToAppend, err := strconv.Atoi(userInput[i])
+		if err != nil {
+			fmt.Println("Error")
+			return true
+		}
+
+		// Check for duplicates
+		if i != 0 {
+			for k := 0; k < len(*aStack); k++ {
+				if (*aStack)[k] == numToAppend {
+					fmt.Println("Error")
+					return true
+				}
+			}
+		}
+
+		(*aStack) = append((*aStack), numToAppend)
+	}
+	return false
+}
+
 
