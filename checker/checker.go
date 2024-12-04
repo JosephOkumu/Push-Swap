@@ -68,4 +68,31 @@ func main() {
 	}
 }
 
+// Reads instructions on the standard input and saves them. If gets non-existing insturction - returns
+func GetInstructions(allInstructions []string, instructionsToUse *[]string) bool {
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		for i, k := range allInstructions {
+			if scanner.Text() == "stop" {
+				return false
+			}
+
+			if scanner.Text() == "" {
+				continue
+			}
+
+			if k == scanner.Text() {
+				*instructionsToUse = append(*instructionsToUse, scanner.Text())
+				break
+			}
+
+			if i == len(allInstructions)-1 {
+				fmt.Println("Error")
+				return true
+			}
+		}
+	}
+	return false
+}
+
 
