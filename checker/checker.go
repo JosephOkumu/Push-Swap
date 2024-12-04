@@ -137,4 +137,66 @@ func PushTop(exStack *[]int, impStack *[]int) {
 	(*impStack)[0] = tempVar
 }
 
+// Swap first 2 elements of stack (sb,sa)
+func Swap(stack *[]int) {
+	if len(*stack) < 2 {
+		// fmt.Println("Not enought elements")
+		return
+	}
 
+	tempVar := (*stack)[0]
+	(*stack)[0] = (*stack)[1]
+	(*stack)[1] = tempVar
+}
+
+// Shifts up all elements of stack by 1 (ra, rb)
+func Rotate(stack *[]int) {
+	if len(*stack) < 2 {
+		return
+	}
+
+	newStack := make([]int, len(*stack))
+
+	newStack[len(*stack)-1] = (*stack)[0]
+
+	for i := 1; i < len(*stack); i++ {
+		newStack[i-1] = (*stack)[i]
+	}
+
+	*stack = newStack
+}
+
+// Shifts down all elements of stack by 1 (rra, rrb)
+func ReverseRotate(stack *[]int) {
+	if len(*stack) < 2 {
+		return
+	}
+
+	newStack := make([]int, len(*stack))
+
+	newStack[0] = (*stack)[len(*stack)-1]
+
+	for i := 1; i < len(*stack); i++ {
+		newStack[i] = (*stack)[i-1]
+	}
+
+	*stack = newStack
+}
+
+// Executes swap function for both stacks (ss)
+func SwapBoth(A_StackTable *[]int, B_StackTable *[]int) {
+	Swap(A_StackTable)
+	Swap(B_StackTable)
+}
+
+// Executes rotate function for both stacks (rr)
+func RotateBoth(A_StackTable *[]int, B_StackTable *[]int) {
+	Rotate(A_StackTable)
+	Rotate(B_StackTable)
+}
+
+// Executes reverse rotate function for both stacks (rrr)
+func ReverseRotateBoth(A_StackTable *[]int, B_StackTable *[]int) {
+	ReverseRotate(A_StackTable)
+	ReverseRotate(B_StackTable)
+}
